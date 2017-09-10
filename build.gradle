@@ -100,6 +100,7 @@ ext {
   generatedDocsDir = new File("${project.rootDir}/docs/generated")
 
   commitId = project.hasProperty('commitId') ? commitId : null
+  projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
 }
 
 apply from: file('wrapper.gradle')
@@ -756,6 +757,7 @@ project(':examples') {
 }
 
 project(':clients') {
+  apply plugin: "osgi"
   archivesBaseName = "kafka-clients"
 
   dependencies {
@@ -811,6 +813,14 @@ project(':clients') {
     dependsOn createVersionFile
     from("$buildDir") {
         include "kafka/$buildVersionFileName"
+    }
+
+    manifest {
+      description project.description
+
+      instruction 'Automatic-Module-Name', "org.apache.kafka.clients"
+      instruction 'Import-Package', '*'
+      instruction 'Export-Package', "org.apache.kafka.clients.*;version=${projectOsgiVersion}"
     }
   }
 
